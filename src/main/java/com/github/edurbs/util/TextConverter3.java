@@ -10,10 +10,10 @@ import org.apache.commons.io.IOUtils;
 
 public class TextConverter3 {
 
-    public static void main(String[] args) {
+    public List<String[]> execute(String file) {
         List<String> address = new ArrayList<>();
         List<String> scripture = new ArrayList<>();
-        String[] lines = readFile("txt/sbi1_XV2.txt").split("\n");
+        String[] lines = readFile(file).split("\n");
         String field1 = "";
         StringBuilder field2 = new StringBuilder();
         boolean field2Complete = true;
@@ -52,16 +52,20 @@ public class TextConverter3 {
             }
         }
         List<String[]> field1Splitted = split(address);
+        List<String[]> bibleConverted = new ArrayList<>();
         for (int i = 0; i < field1Splitted.size(); i++) {
-            String name = field1Splitted.get(i)[0] + " " + field1Splitted.get(i)[1] + ":" + field1Splitted.get(i)[2];
-            if(!name.equals(address.get(i))){
-                System.out.println(name + " => " + address.get(i) );
-            }
+            bibleConverted.add(new String[]{
+                field1Splitted.get(i)[0], 
+                field1Splitted.get(i)[1], 
+                field1Splitted.get(i)[2], 
+                scripture.get(i)
+            });
         }
+        return bibleConverted;
         
     }
 
-    private static List<String[]> split(List<String> addresses) {
+    private List<String[]> split(List<String> addresses) {
         List<String[]> result = new ArrayList<>();
 
         for(String address : addresses){
@@ -82,35 +86,35 @@ public class TextConverter3 {
         return result;
     }
 
-    private static boolean bookWithChapters(String address) {
+    private boolean bookWithChapters(String address) {
         return address.contains(":");
     }
 
-    private static boolean lineIsATitle(String line) {
+    private boolean lineIsATitle(String line) {
         return line.contains(":Title");
     }
 
-    private static boolean lineHasOnly2thIncompleteField(int delimiters) {
+    private boolean lineHasOnly2thIncompleteField(int delimiters) {
         return delimiters==0;
     }
 
-    private static boolean lineHasOnly2thCompleteField(String line, int delimiters) {
+    private boolean lineHasOnly2thCompleteField(String line, int delimiters) {
         return delimiters == 1 && line.endsWith("|");
     }
 
-    private static boolean lineHasTwoIncompleteFields(String line, int delimiters) {
+    private boolean lineHasTwoIncompleteFields(String line, int delimiters) {
         return delimiters == 1 && !line.endsWith("|");
     }
 
-    private static boolean lineHasTwoCompleteFields(String line, int delimiters) {
+    private boolean lineHasTwoCompleteFields(String line, int delimiters) {
         return delimiters == 2 && line.endsWith("|");
     }
 
-    private static boolean lineCanBeAdded(String field1, StringBuilder field2, boolean field2Complete) {
+    private boolean lineCanBeAdded(String field1, StringBuilder field2, boolean field2Complete) {
         return field2Complete && !field1.isBlank() && !field2.toString().isBlank();
     }
 
-    private static String readFile(String filePath) {
+    private String readFile(String filePath) {
         ClassLoader classLoader = TextConverter3.class.getClassLoader();
         
         try (InputStream is = classLoader.getResourceAsStream(filePath)) {
@@ -121,7 +125,7 @@ public class TextConverter3 {
         }            
     }
 
-    private static int countDelimiters(String line, char delimiter) {
+    private int countDelimiters(String line, char delimiter) {
         int count = 0;
         for (int i = 0; i < line.length(); i++) {
             if (line.charAt(i) == delimiter) {
