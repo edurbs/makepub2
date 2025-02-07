@@ -1,4 +1,4 @@
-package com.github.edurbs.util;
+package com.github.edurbs.app.usecase;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
-public class TextConverter3 {
+public class TextConverter {
 
     public List<String[]> execute(String file) {
         List<String> address = new ArrayList<>();
@@ -115,7 +115,7 @@ public class TextConverter3 {
     }
 
     private String readFile(String filePath) {
-        ClassLoader classLoader = TextConverter3.class.getClassLoader();
+        ClassLoader classLoader = TextConverter.class.getClassLoader();
         
         try (InputStream is = classLoader.getResourceAsStream(filePath)) {
             return IOUtils.toString(is, StandardCharsets.UTF_8);

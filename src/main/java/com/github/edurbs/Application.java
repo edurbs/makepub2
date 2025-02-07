@@ -1,9 +1,12 @@
 package com.github.edurbs;
 
-import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.theme.Theme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+
+import com.github.edurbs.app.usecase.ConvertBibles;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * The entry point of the Spring Boot application.
@@ -18,7 +21,13 @@ public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
-
-        
     }
+
+    public static void convertBibles() {
+        ConfigurableApplicationContext context = SpringApplication.run(Application.class);
+        ConvertBibles convertBibles = context.getBean(ConvertBibles.class);
+        convertBibles.execute();
+        context.close(); 
+    }
+
 }
