@@ -50,8 +50,40 @@ public class TextConverter3 {
                 field1 = "";
                 field2 = new StringBuilder();
             }
-        }        
+        }
+        List<String[]> field1Splitted = split(address);
+        for (int i = 0; i < field1Splitted.size(); i++) {
+            String name = field1Splitted.get(i)[0] + " " + field1Splitted.get(i)[1] + ":" + field1Splitted.get(i)[2];
+            if(!name.equals(address.get(i))){
+                System.out.println(name + " => " + address.get(i) );
+            }
+        }
         
+    }
+
+    private static List<String[]> split(List<String> addresses) {
+        List<String[]> result = new ArrayList<>();
+
+        for(String address : addresses){
+            int lastSpaceIndex = address.lastIndexOf(" ");
+            String bookName = address.substring(0, lastSpaceIndex).trim();
+            String chapterNumber;
+            String verseNumber;
+            if(bookWithChapters(address)){
+                int colonIndex = address.indexOf(":");                
+                chapterNumber = address.substring(lastSpaceIndex, colonIndex).trim();
+                verseNumber = address.substring(colonIndex+1).trim();
+            }else{
+                chapterNumber = "1";
+                verseNumber = address.substring(lastSpaceIndex).trim();
+            }
+            result.add(new String[]{bookName, chapterNumber, verseNumber});
+        }
+        return result;
+    }
+
+    private static boolean bookWithChapters(String address) {
+        return address.contains(":");
     }
 
     private static boolean lineIsATitle(String line) {
