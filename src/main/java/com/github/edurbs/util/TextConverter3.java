@@ -11,52 +11,40 @@ import org.apache.commons.io.IOUtils;
 public class TextConverter3 {
 
     public static void main(String[] args) {
-        // text file is on resources folder
-        // there are 2 fields delimited with |
-        // I need to read the file and extract the first 10 lines to two lists of strings
-
         List<String> address = new ArrayList<>();
         List<String> scripture = new ArrayList<>();
-
-        // read the files from resources
         String[] lines = readFile("txt/sbi1_XV2.txt").split("\n");
-
         String field1 = "";
         StringBuilder field2 = new StringBuilder();
         boolean field2Complete = true;
-        // get the first field from the beginning of the line until the next | delimiter
         for (String line : lines) {
             line = line.trim();
-            if(line.contains(":Title")) {
+            if(lineIsATitle(line)) {
                 continue;
             }
             int delimiters = countDelimiters(line, '|');
-            if(delimiters == 2 && line.endsWith("|")){
-                // line has 2 fields
-                // field1 from start until the | delimiter
-                // field2 from the | delimiter until the end of the line
-                field1 = line.substring(0, line.indexOf("|"));
-                field2.append(line.substring(line.indexOf("|")+1, line.length()-1));
+            if(lineHasTwoCompleteFields(line, delimiters)){                
                 field2Complete = true;
-            }else if(delimiters == 1 && !line.endsWith("|")){
-                // line has 2 fields, but the 2th is incomplete
                 // field1 from start until the | delimiter
-                // field2 from the | delimiter until the end of the line
                 field1 = line.substring(0, line.indexOf("|"));
-                field2.append(line.substring(line.indexOf("|")+1));
+                // field2 from the | delimiter until the end of the line
+                field2.append(line.substring(line.indexOf("|")+1, line.length()-1));
+            }else if(lineHasTwoIncompleteFields(line, delimiters)){                
                 field2Complete = false;
-            }else if(delimiters == 1 && line.endsWith("|")){
-                // line has only the 2th field and it is complete
+                // field1 from start until the | delimiter
+                field1 = line.substring(0, line.indexOf("|"));
+                // field2 from the | delimiter until the end of the line
+                field2.append(line.substring(line.indexOf("|")+1));
+            }else if(lineHasOnly2thCompleteField(line, delimiters)){
                 field2.append(" ");
                 field2.append(line.substring(0,line.length()-1));
                 field2Complete = true;
-            }else if(delimiters==0){
-                // lines in a part of the 2th field
+            }else if(lineHasOnly2thIncompleteField(delimiters)){
                 field2.append(" ");
                 field2.append(line);
             } 
             
-            if (field2Complete && !field1.isBlank() && !field2.toString().isBlank()) {
+            if (lineCanBeAdded(field1, field2, field2Complete)) {
                 address.add(field1);
                 scripture.add(field2.toString());
                 field1 = "";
@@ -64,6 +52,30 @@ public class TextConverter3 {
             }
         }        
         
+    }
+
+    private static boolean lineIsATitle(String line) {
+        return line.contains(":Title");
+    }
+
+    private static boolean lineHasOnly2thIncompleteField(int delimiters) {
+        return delimiters==0;
+    }
+
+    private static boolean lineHasOnly2thCompleteField(String line, int delimiters) {
+        return delimiters == 1 && line.endsWith("|");
+    }
+
+    private static boolean lineHasTwoIncompleteFields(String line, int delimiters) {
+        return delimiters == 1 && !line.endsWith("|");
+    }
+
+    private static boolean lineHasTwoCompleteFields(String line, int delimiters) {
+        return delimiters == 2 && line.endsWith("|");
+    }
+
+    private static boolean lineCanBeAdded(String field1, StringBuilder field2, boolean field2Complete) {
+        return field2Complete && !field1.isBlank() && !field2.toString().isBlank();
     }
 
     private static String readFile(String filePath) {
