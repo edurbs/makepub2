@@ -1,4 +1,4 @@
-package com.github.edurbs.app.usecase;
+package com.github.edurbs.makepub2.app.usecase.meps;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.github.edurbs.infra.infra.entity.Bible;
-import com.github.edurbs.infra.repository.BibleRepository;
+import com.github.edurbs.makepub2.infra.infra.entity.Bible;
+import com.github.edurbs.makepub2.infra.repository.BibleRepository;
 
 @Service
 public class ConvertBibles {

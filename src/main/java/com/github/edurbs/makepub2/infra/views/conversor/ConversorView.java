@@ -1,6 +1,6 @@
-package com.github.edurbs.views.conversor;
+package com.github.edurbs.makepub2.infra.views.conversor;
 
-import com.github.edurbs.app.usecase.TestService;
+import com.github.edurbs.makepub2.app.usecase.TestService;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;

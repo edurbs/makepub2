@@ -1,4 +1,4 @@
-package com.github.edurbs.app.usecase;
+package com.github.edurbs.makepub2.app.usecase;
 
 import org.springframework.stereotype.Service;
 

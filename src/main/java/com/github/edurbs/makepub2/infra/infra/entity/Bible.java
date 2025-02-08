@@ -1,4 +1,4 @@
-package com.github.edurbs.infra.infra.entity;
+package com.github.edurbs.makepub2.infra.infra.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

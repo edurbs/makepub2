@@ -1,10 +1,10 @@
-package com.github.edurbs;
+package com.github.edurbs.makepub2;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import com.github.edurbs.app.usecase.ConvertBibles;
+import com.github.edurbs.makepub2.app.usecase.meps.ConvertBibles;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.shared.communication.PushMode;

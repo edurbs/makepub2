@@ -1,4 +1,4 @@
-package com.github.edurbs.app.usecase;
+package com.github.edurbs.makepub2.app.usecase.meps;
 
 import java.io.IOException;
 import java.io.InputStream;
