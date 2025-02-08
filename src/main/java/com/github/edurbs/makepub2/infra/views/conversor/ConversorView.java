@@ -1,6 +1,13 @@
 package com.github.edurbs.makepub2.infra.views.conversor;
 
-import com.github.edurbs.makepub2.app.usecase.TestService;
+import java.io.ByteArrayInputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.github.edurbs.makepub2.app.domain.EpubFile;
+import com.github.edurbs.makepub2.app.usecase.epub.EpubCreator;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
@@ -8,34 +15,41 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.progressbar.ProgressBar;
-import com.vaadin.flow.component.progressbar.ProgressBarVariant;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 
 @PageTitle("Conversor")
 @Route("")
 public class ConversorView extends VerticalLayout {
+    
+    @Autowired
+    private EpubCreator epubCreator;
+
 
     private TextArea textArea = new TextArea();
     private TextField fieldTitle = new TextField();
     private TextField fieldPeriod = new TextField();
     private TextField fieldStudyNumber = new TextField();
-    private ProgressBar progressBar = new ProgressBar();
-    private Span progressBarLabelValue = new Span();
-    private NativeLabel progressBarLabelText = new NativeLabel();
-    private HorizontalLayout progressBarLabel = new HorizontalLayout(
-    progressBarLabelText, progressBarLabelValue);
+    // private ProgressBar progressBar = new ProgressBar();
+    // private Span progressBarLabelValue = new Span();
+    // private NativeLabel progressBarLabelText = new NativeLabel();
+    // private HorizontalLayout progressBarLabel = new HorizontalLayout(
+    // progressBarLabelText, progressBarLabelValue);
+
+    private HorizontalLayout buttonLayout;
+
+
+    private EpubFile epubFile;
 
     public ConversorView() {
         setSpacing(false);
@@ -93,13 +107,14 @@ public class ConversorView extends VerticalLayout {
         Button cleanButton = new Button("Limpar");
         cleanButton.addClickListener(this::onClickCleanButton);
 
-        HorizontalLayout buttonLayout = new HorizontalLayout(startButton, cleanButton);        
+        buttonLayout = new HorizontalLayout(startButton, cleanButton);        
         layout.add(buttonLayout);
 
-        progressBar.addThemeVariants(ProgressBarVariant.LUMO_CONTRAST);        
-        progressBarLabel.setJustifyContentMode(JustifyContentMode.BETWEEN);        
-        layout.add(progressBarLabel,progressBar);
-        setProgressBarVisibility(false);
+        // progressBar.addThemeVariants(ProgressBarVariant.LUMO_CONTRAST);        
+        // progressBarLabel.setJustifyContentMode(JustifyContentMode.BETWEEN);        
+        // layout.add(progressBarLabel,progressBar);
+        // setProgressBarVisibility(false);
+        
         add(layout);
 
         setSizeFull();
@@ -108,31 +123,60 @@ public class ConversorView extends VerticalLayout {
         getStyle().set("text-align", "center");
     }
 
-    private void setProgressBarVisibility(boolean visible){
-        progressBarLabel.setVisible(visible);
-        progressBar.setVisible(visible);
-    }
+    // private void setProgressBarVisibility(boolean visible){
+    //     progressBarLabel.setVisible(visible);
+    //     progressBar.setVisible(visible);
+    // }
 
     private void onClickStartButton(ClickEvent<Button> event) {
         event.getSource().setEnabled(true);
-        setProgressBarVisibility(true);
+        // setProgressBarVisibility(true);
+
+        String text = textArea.getValue();
+        String title = fieldTitle.getValue();
+        String period = fieldPeriod.getValue();
+        String studyNumber = fieldStudyNumber.getValue();        
+
         var ui = UI.getCurrent();
-        TestService ts = new TestService();
-        ts.startBackgroundJob(
+        
+        epubFile = epubCreator.execute(
             ui.accessLater(this::onJobCompleted, null), 
-            ui.accessLater(this::updateProgressBar, null),
-            ui.accessLater(this::onJobFailed, null)
+            //ui.accessLater(this::updateProgressBar, null),
+            ui.accessLater(this::onJobFailed, null),
+            text, title, period, studyNumber
         );
     
     }
 
-    private void updateProgressBar(String message[]) {
-        Double status = Double.parseDouble(message[0]);
-        progressBar.setValue(status);
-        progressBarLabelValue.setText(status*100 + "%");
-        progressBarLabelText.setText(message[1]);
-        
+    private void handleEpubFile(EpubFile epubFile) {
+        if(epubFile == null){
+            return;
+        }
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String filename = "file_" + timestamp + ".epub";
+        StreamResource resource = new StreamResource(filename, () -> new ByteArrayInputStream(epubFile.content()));
+        Anchor anchor = new Anchor(resource, "");
+        anchor.getElement().setAttribute("download", true);
+        anchor.getElement().getStyle().set("display", "none");
+        anchor.setText("Download");
+        anchor.setHref(resource);
+        Button button = new Button("Download");
+        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY,
+        ButtonVariant.LUMO_WARNING);
+        button.addClickListener(event -> {
+            anchor.getElement().callJsFunction("click");
+            buttonLayout.remove(button);
+        });
+        buttonLayout.add(anchor, button);
     }
+
+    // private void updateProgressBar(String[] message) {
+    //     Double status = Double.parseDouble(message[0]);
+    //     progressBar.setValue(status);
+    //     progressBarLabelValue.setText(status*100 + "%");
+    //     progressBarLabelText.setText(message[1]);
+        
+    // }
     private void onClickCleanButton(ClickEvent<Button> event) {
         textArea.clear();
         fieldTitle.clear();
@@ -142,12 +186,13 @@ public class ConversorView extends VerticalLayout {
 
     private void onJobCompleted(String result) {
         Notification.show(result);
-        setProgressBarVisibility(false);
+        // setProgressBarVisibility(false);   
+        handleEpubFile(epubFile);     
     }
 
     private void onJobFailed(Exception error) {
         Notification.show(error.getMessage());
-        setProgressBarVisibility(false);
+        // setProgressBarVisibility(false);
     }
 
 }

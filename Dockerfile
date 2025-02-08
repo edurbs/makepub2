@@ -23,7 +23,7 @@ ENV LANG en_US.UTF-8
 
 # JRE fails to load fonts if there are no standard fonts in the image; DejaVu is a good choice,
 # see https://github.com/docker-library/openjdk/issues/73#issuecomment-207816707
-RUN apk add --no-cache fontconfig ttf-dejavu
+RUN apk add --no-cache fontconfig ttf-liberation
 
 ENV JAVA_HOME=/opt/jdk/jdk-21
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
@@ -40,7 +40,7 @@ RUN addgroup --system $APPLICATION_USER &&  adduser --system $APPLICATION_USER -
 # Create the application directory
 RUN mkdir /app && chown -R $APPLICATION_USER /app
 
-COPY --chown=$APPLICATION_USER:$APPLICATION_USER build/libs/*.jar /app/app.jar
+COPY --chown=$APPLICATION_USER:$APPLICATION_USER target/*.jar /app/app.jar
 
 WORKDIR /app
 

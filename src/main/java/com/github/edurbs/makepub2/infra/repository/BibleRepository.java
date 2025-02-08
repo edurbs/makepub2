@@ -5,7 +5,10 @@ import org.springframework.stereotype.Repository;
 
 import com.github.edurbs.makepub2.infra.infra.entity.Bible;
 
+
 @Repository
 public interface BibleRepository extends JpaRepository<Bible, Long> {
+
+    Bible findByVersionAndBookAndChapterAndVerse(String version,String book, String chapter, String verse);
     
 } 

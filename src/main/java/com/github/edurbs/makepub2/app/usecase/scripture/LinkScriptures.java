@@ -3,11 +3,13 @@ package com.github.edurbs.makepub2.app.usecase.scripture;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.edurbs.makepub2.app.domain.ScriptureAddress;
 import com.github.edurbs.makepub2.app.gateway.UUIDGenerator;
-import com.github.edurbs.makepub2.app.usecase.types.BibleReader;
+import com.github.edurbs.makepub2.infra.infra.entity.Bible;
+import com.github.edurbs.makepub2.infra.repository.BibleRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,9 +19,12 @@ public class LinkScriptures {
 
     private final MakeRegex makeRegex;
     private final UUIDGenerator uuidGenerator;
-    private final BibleReader scriptureEarthReader;
-    private final BibleReader nwtpReader;
-    private final BibleReader tnmReader;
+
+    @Autowired
+    private final ConvertScripture convertScripture;
+
+    @Autowired
+    private BibleRepository bibleRepository;    
 
     public String execute( String originalText) {
         StringBuilder linkedHtml = new StringBuilder();
@@ -60,20 +65,37 @@ public class LinkScriptures {
             return "";
         }
         String scripture = "";
-        // TODO read sbi1 from DB
-        // String scripture = scriptureEarthReader.getScripture(address);
-
-        // TODO if not blank, convert the spelling
-        
+        scripture = getBible(address, "sbi1");
+        scripture = convertScripture.execute(scripture);
         if(scripture.isBlank()) {
-            // TODO read nwtp from DB
-            // scripture = nwtpReader.getScripture(address);
+            scripture = getBible(address, "nwtp");
         }
         if(scripture.isBlank()) {
-            // TODO read nwt from DB
-            // scripture = tnmReader.getScripture(address);
+            scripture = getBible(address, "nwt");
         }
         return scripture;
+    }
+
+    private String getBible(ScriptureAddress address, String version) {
+        Bible bible = null;
+        String finalScriptureText = "";
+        if(address.verse()<address.endVerse()) {
+            StringBuilder text = new StringBuilder();
+            for(int i=address.verse();i<=address.endVerse();i++) {
+                bible = bibleRepository.findByVersionAndBookAndChapterAndVerse(version, address.book().getFullName(), String.valueOf(address.chapter()), String.valueOf(i));
+                if(bible!=null){
+                    text.append(bible.getVerse()).append(" ");
+                    text.append(bible.getText()).append(" ");
+                }
+            }
+            finalScriptureText = text.toString();
+        }else{
+            bible = bibleRepository.findByVersionAndBookAndChapterAndVerse(version, address.book().getFullName(), String.valueOf(address.chapter()), String.valueOf(address.verse()));
+            if(bible!=null) {
+                finalScriptureText = bible.getText();
+            }
+        }
+        return finalScriptureText;
     }
 
     

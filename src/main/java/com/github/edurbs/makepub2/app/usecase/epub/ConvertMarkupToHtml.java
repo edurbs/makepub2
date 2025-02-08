@@ -1,15 +1,16 @@
 package com.github.edurbs.makepub2.app.usecase.epub;
 
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.springframework.stereotype.Component;
 
 import com.github.edurbs.makepub2.app.gateway.UUIDGenerator;
 import com.github.edurbs.makepub2.app.usecase.types.StringConversor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ public class ConvertMarkupToHtml implements StringConversor {
     
     @Override
     public String convert( final String text) {
+        footNotes.clear();
         StringBuilder textConverted = new StringBuilder();
         List<String> lines = List.of(text.split("\n"));
         for(String line : lines) {

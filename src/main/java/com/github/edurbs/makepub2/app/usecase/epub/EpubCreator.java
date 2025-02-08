@@ -17,6 +17,7 @@ import com.github.edurbs.makepub2.app.usecase.exceptions.UseCaseException;
 import com.github.edurbs.makepub2.app.usecase.scripture.LinkScriptures;
 import com.github.edurbs.makepub2.app.usecase.types.EpubMap;
 import com.github.edurbs.makepub2.app.usecase.types.StringConversor;
+import com.vaadin.flow.function.SerializableConsumer;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,16 +31,34 @@ public class EpubCreator {
     private final LinkScriptures linkScriptures;
     
     private final CreateCover createCover;
+    private EpubFile epubFile;
     
-    public EpubFile execute( String mainText,  String subtitulo,  String periodo,  String estudo){
-        Map<EpubMap, String> finalEpubMap = new HashMap<>();
-        String convertedText = markupConversor.convert(mainText);        
-        String linkedTextWithcriptures = createLinkedScritpures(convertedText);
-        String startHtml = EpubMap.TEXT.getDefaultText().formatted(subtitulo);
-        finalEpubMap.put(EpubMap.TEXT, startHtml+linkedTextWithcriptures);
-        createOtherEpubPages(finalEpubMap);
-        return createEpubFile(subtitulo, periodo, estudo, finalEpubMap);
-    }
+    public EpubFile execute(
+        SerializableConsumer<String> onJobCompleted,
+        // SerializableConsumer<String[]> progressBar,
+        SerializableConsumer<Exception> onJobFailed, 
+        String mainText,  
+        String subtitulo,  
+        String periodo,  
+        String estudo)
+        {
+         try{   
+            Map<EpubMap, String> finalEpubMap = new HashMap<>();
+            String convertedText = markupConversor.convert(mainText);
+            String linkedTextWithcriptures = createLinkedScritpures(convertedText);
+            String startHtml = EpubMap.TEXT.getDefaultText().formatted(subtitulo);
+            finalEpubMap.put(EpubMap.TEXT, startHtml+linkedTextWithcriptures);
+            createOtherEpubPages(finalEpubMap);
+            epubFile = createEpubFile(subtitulo, periodo, estudo, finalEpubMap);
+            onJobCompleted.accept("Epub criado com sucesso");
+            return epubFile;
+        }catch (Exception exception){
+            onJobFailed.accept(exception);
+            exception.printStackTrace();
+            throw new UseCaseException("Erro na conversão.", exception.getCause());
+        }
+            
+    }    
 
     private void createOtherEpubPages(Map<EpubMap, String> finalEpubMap) {
         finalEpubMap.put(EpubMap.CONTENT, EpubMap.CONTENT.getDefaultText());
