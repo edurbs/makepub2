@@ -51,7 +51,7 @@ public class LinkScriptures {
             if(first) {
                 first = false;
             }else{
-                scriptureAddressText = " "+scriptureAddressText;
+                scriptureAddressText = ""+scriptureAddressText;
             }
             linkScripture(scriptureAddressText, matcher, uuid, linkedHtml);
             generatedScriptureContents.append(generateScriptureContents(uuid, scriptureAddressText, scriptureAddresses));
@@ -131,8 +131,7 @@ public class LinkScriptures {
 
     private void linkScripture( String scriptureAddress,  Matcher matcher,  final String uuid, StringBuilder linkedHtml) {
         String optionsForTagA = "epub:type=\"noteref\"";
-        String linkedScripture = """
-                 <a %s href="#%s">%s</a>""".formatted(optionsForTagA, uuid, scriptureAddress);
+        String linkedScripture = "<a %s href=\"#%s\">%s</a>".formatted(optionsForTagA, uuid, scriptureAddress);
         matcher.appendReplacement(linkedHtml, linkedScripture);
 
     }
