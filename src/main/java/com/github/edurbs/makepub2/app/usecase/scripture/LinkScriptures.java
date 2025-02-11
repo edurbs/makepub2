@@ -1,6 +1,7 @@
 package com.github.edurbs.makepub2.app.usecase.scripture;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import com.github.edurbs.makepub2.app.domain.ScriptureAddress;
 import com.github.edurbs.makepub2.app.gateway.UUIDGenerator;
 import com.github.edurbs.makepub2.infra.infra.entity.Bible;
 import com.github.edurbs.makepub2.infra.repository.BibleRepository;
+import com.vaadin.flow.function.SerializableConsumer;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,13 +28,19 @@ public class LinkScriptures {
     @Autowired
     private BibleRepository bibleRepository;    
 
-    public String execute( String originalText) {
+    public String execute( String originalText, SerializableConsumer<String[]> progressBar) {
         StringBuilder linkedHtml = new StringBuilder();
         Matcher matcher = makeRegex.getMatcher(originalText);
         String lastBookName="";
         StringBuilder generatedScriptureContents = new StringBuilder();
         boolean first = true;
+        int textSize = originalText.length();
         while (matcher.find()) {
+            int currentPosition = matcher.end();
+            double percent = ( (double) currentPosition / textSize  );
+            String formattedPercent = String.format(Locale.US, "%.1f", percent);
+            progressBar.accept(new String[]{formattedPercent, "Adicionando os textos bíblicos... "+matcher.group()});
+            
             var extractor = new ScriptureAddressExtractor(matcher, lastBookName);
             extractor.execute();
             String addressPrefix = extractor.getAddressPrefix();

@@ -32,10 +32,9 @@ public class EpubCreator {
     
     private final CreateCover createCover;
     private EpubFile epubFile;
-    
+
     public EpubFile execute(
-        SerializableConsumer<String> onJobCompleted,
-        // SerializableConsumer<String[]> progressBar,
+        SerializableConsumer<String[]> progressBar,
         SerializableConsumer<Exception> onJobFailed, 
         String mainText,  
         String subtitulo,  
@@ -43,14 +42,15 @@ public class EpubCreator {
         String estudo)
         {
          try{   
+            progressBar.accept(new String[]{"0.0", "Iniciando..."});
             Map<EpubMap, String> finalEpubMap = new HashMap<>();
-            String convertedText = markupConversor.convert(mainText);
-            String linkedTextWithcriptures = createLinkedScritpures(convertedText);
+            String convertedText = markupConversor.convert(mainText);            
+            String linkedTextWithcriptures = linkScriptures.execute(convertedText, progressBar);
             String startHtml = EpubMap.TEXT.getDefaultText().formatted(subtitulo);
             finalEpubMap.put(EpubMap.TEXT, startHtml+linkedTextWithcriptures);
             createOtherEpubPages(finalEpubMap);
             epubFile = createEpubFile(subtitulo, periodo, estudo, finalEpubMap);
-            onJobCompleted.accept("Epub criado com sucesso");
+            progressBar.accept(new String[]{"1.0", "Finalizado."});
             return epubFile;
         }catch (Exception exception){
             onJobFailed.accept(exception);
@@ -58,7 +58,8 @@ public class EpubCreator {
             throw new UseCaseException("Erro na conversão.", exception.getCause());
         }
             
-    }    
+    }
+
 
     private void createOtherEpubPages(Map<EpubMap, String> finalEpubMap) {
         finalEpubMap.put(EpubMap.CONTENT, EpubMap.CONTENT.getDefaultText());
@@ -66,12 +67,6 @@ public class EpubCreator {
         finalEpubMap.put(EpubMap.NAV, EpubMap.NAV.getDefaultText());
         finalEpubMap.put(EpubMap.STYLE, EpubMap.STYLE.getDefaultText());
     }
-
-    
-    private String createLinkedScritpures( String linkedTextWithMusic) {
-        return linkScriptures.execute(linkedTextWithMusic);
-    }
-
    
     private EpubFile createEpubFile( String subtitulo,  String periodo,  String estudo, Map<EpubMap, String> finalEpubMap) {
 
