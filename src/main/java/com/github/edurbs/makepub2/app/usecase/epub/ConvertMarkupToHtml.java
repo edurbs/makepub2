@@ -100,9 +100,14 @@ public class ConvertMarkupToHtml implements StringConversor {
         String textConverted;
         try{
             final String regex = "^(" + markupEnum.getId() + ")(\\d{1,2}[^.])";
-            final String subst = " <sup>$2</sup>";
             final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
             final Matcher matcher = pattern.matcher(text);
+            String subst;
+            if(markupEnum.isQuestion()){
+                subst = "$2";
+            }else{
+                subst = " <sup>$2</sup>";
+            }
             textConverted = matcher.replaceAll(subst);
         } catch (Exception e) {
             textConverted = text;
