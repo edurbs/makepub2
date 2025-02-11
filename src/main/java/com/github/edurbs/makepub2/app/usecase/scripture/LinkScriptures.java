@@ -92,7 +92,7 @@ public class LinkScriptures {
             for(int i=address.verse();i<=address.endVerse();i++) {
                 bible = bibleRepository.findByVersionAndBookAndChapterAndVerse(version, address.book().getFullName(), String.valueOf(address.chapter()), String.valueOf(i));
                 if(bible!=null){
-                    text.append(bible.getVerse()).append(" ");
+                    text.append("(").append(bible.getVerse()).append(") ");
                     text.append(bible.getText()).append(" ");
                 }
             }
@@ -100,7 +100,10 @@ public class LinkScriptures {
         }else{
             bible = bibleRepository.findByVersionAndBookAndChapterAndVerse(version, address.book().getFullName(), String.valueOf(address.chapter()), String.valueOf(address.verse()));
             if(bible!=null) {
-                finalScriptureText = bible.getText();
+                StringBuilder text = new StringBuilder();
+                text.append("(").append(bible.getVerse()).append(") ");
+                text.append(bible.getText()).append(" ");
+                finalScriptureText = text.toString();
             }
         }
         return finalScriptureText;
